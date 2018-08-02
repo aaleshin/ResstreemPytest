@@ -1,0 +1,4 @@
+selenium
+pytest==3.4.0
+PyHamcrest==1.9.0
+requests==2.9.1
