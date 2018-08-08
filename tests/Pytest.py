@@ -78,7 +78,7 @@ class TestServerFunctionality():
         assert_that(items, get_all)
 
 
-    def test_word_eith_gap(self):
+    def test_word_with_gap(self):
         response = requests.get(self.url, params={'q': 'OWA SP"'})
         assert_that(response.status_code, equal_to(200))
         items = response.json()['data']
