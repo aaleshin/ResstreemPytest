@@ -1,3 +1,4 @@
+import telnetlib
 from hamcrest import *
 import pytest
 from selenium.webdriver.common.by import By
@@ -6,7 +7,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 import requests
 
 
-class TestServerFunctionality():
+class TestServerFunctionality:
     def setup_class(self):
         self.host = 'restream.sloppy.zone'
         self.command = 'rest/product/search'
@@ -134,22 +135,18 @@ class TestServerFunctionality():
 
 
 
-    # def test_quoted_text(self):
-    #     response = requests.get(self.url, params={'q': '/'apple'/'})
-    #     assert_that(response.status_code, equal_to(500))
-    #     items = response.json()['data']
-    #     assert_that(len(items), equal_to(0))
 
-# @pytest.fixture(scope="session")
-# def driver_init(request):
-#     web_driver = webdriver.Chrome("D:\\downloads\\avtotests\\chromedriver.exe")
-#     request.cls.driver = web_driver
-#     yield
-#     web_driver.close()
-#
-# @pytest.mark.usefixtures("driver_init")
-# class CheckUI():
-#     def test_check_goods_count(self, driver):
-#         wait = WebDriverWait(self.driver, 3)
-#         driver.get('https://restream.sloppy.zone/#/search')
-#         wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, "input[value='Find Flights']"))).click()
+@pytest.fixture(scope="session")
+def driver_init(request):
+    web_driver = webdriver.Chrome("D:\\downloads\\avtotests\\chromedriver.exe")
+    request.cls.driver = web_driver
+    yield
+    web_driver.close()
+
+
+@pytest.mark.usefixtures("driver_init")
+class CheckUI:
+    def test_check_goods_count(self, driver):
+        wait = WebDriverWait(self.driver, 3)
+        driver.get('https://restream.sloppy.zone/#/search')
+        wait.until(telnetlib.EC.visibility_of_element_located((By.CSS_SELECTOR, "input[value='Find Flights']"))).click()
