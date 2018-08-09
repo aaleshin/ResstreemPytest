@@ -1,10 +1,10 @@
-import telnetlib
+from telnetlib import EC
 from hamcrest import *
 import pytest
-from selenium.webdriver.common.by import By
 from selenium import webdriver
-from selenium.webdriver.support.wait import WebDriverWait
 import requests
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
 
 
 class TestServerFunctionality:
@@ -17,7 +17,14 @@ class TestServerFunctionality:
     @pytest.fixture(scope="function")
     def get_all(self):
         response_all = requests.get(self.url)
-        return response_all.json()['data']
+        all_item = response_all.json()['data']
+        return all_item
+        # a = 0
+        # for count in all_item:
+        #     if all_item.has['id']:
+        #         a += 1
+        # return all_item, a
+        # print(all_item, a)
 
 
     def test_getall(self):
@@ -29,16 +36,17 @@ class TestServerFunctionality:
         response = requests.get(self.url, params={'q': 'apple'})
         assert_that(response.status_code, equal_to(200))
         items = response.json()['data']
+        assert_that(len(items), greater_than(0))
         for item in items:
             assert_that(item['name'].lower(), contains_string('apple'))
 
-    # почему не проходит тест?
-    # def test_discription(self):
-    #     response = requests.get(self.url, params={'q': 'a'})
-    #     assert_that(response.status_code, equal_to(200))
-    #     items = response.json()['data']
-    #     for item in items:
-    #         assert_that(item['description'].lower() or item['name'].lower(), contains_string('a'))
+
+    def test_discription(self):
+        response = requests.get(self.url, params={'q': 'a'})
+        assert_that(response.status_code, equal_to(200))
+        items = response.json()['data']
+        for item in items:
+            assert_that((item['description'].lower(), contains_string('a')) or (item['name'].lower(), contains_string('a')))
 
 
     def test_many_word(self):
@@ -131,22 +139,25 @@ class TestServerFunctionality:
     def test_inverted_commas(self):
         """it's bug"""
         response = requests.get(self.url, params={'q': ' \'OWASP\' '})
-        assert_that(response.status_code, equal_to(500))
+        assert_that(response.status_code, equal_to(200))
+        items = response.json()['data']
+        assert_that(len(items), equal_to(0))
+        # assert_that(response.status_code, equal_to(500))
 
 
+    @pytest.yield_fixture(scope='session')
+    def driver(self):
+        driver = webdriver.Chrome("D:\\downloads\\avtotests\\chromedriver.exe")
+        driver.maximize_window()
+        yield driver
+        driver.quit()
 
 
-@pytest.fixture(scope="session")
-def driver_init(request):
-    web_driver = webdriver.Chrome("D:\\downloads\\avtotests\\chromedriver.exe")
-    request.cls.driver = web_driver
-    yield
-    web_driver.close()
-
-
-@pytest.mark.usefixtures("driver_init")
-class CheckUI:
     def test_check_goods_count(self, driver):
-        wait = WebDriverWait(self.driver, 3)
+        driver.implicitly_wait(10)
         driver.get('https://restream.sloppy.zone/#/search')
-        wait.until(telnetlib.EC.visibility_of_element_located((By.CSS_SELECTOR, "input[value='Find Flights']"))).click()
+        driver.find_element(By.CSS_SELECTOR, " div > ul > li> form > div > input").send_keys('OWASP')
+        driver.find_element(By.ID, "searchButton").click()
+        WebDriverWait(self.driver, 10).until(EC.visibility_of_element_located((By.CSS_SELECTOR, "body > div.container-fluid.ng-scope > div > div > table > tbody > tr > td:nth-child(2)")))
+        items = driver.findElements(By.CSS_SELECTOR("body > div.container-fluid.ng-scope > div > div > table > tbody > tr > td:nth-child(2)"))
+        print(len(items))
