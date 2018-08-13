@@ -1,4 +1,4 @@
-import hamcrest
+from hamcrest import *
 import pytest
 import selenium
 import requests
@@ -17,130 +17,6 @@ class TestServerFunctionality:
         response_all = requests.get(self.url)
         all_item = response_all.json()['data']
         return all_item
-        # a = 0
-        # for count in all_item:
-        #     if all_item.has['id']:
-        #         a += 1
-        # return all_item, a
-        # print(all_item, a)
-
-
-    def test_getall(self):
-        response = requests.get(self.url)
-        hamcrest.assert_that(response.status_code, hamcrest.equal_to(200))
-
-
-    def test_response(self):
-        response = requests.get(self.url, params={'q': 'apple'})
-        hamcrest.assert_that(response.status_code, hamcrest.equal_to(200))
-        items = response.json()['data']
-        hamcrest.assert_that(len(items), hamcrest.greater_than(0))
-        for item in items:
-            hamcrest.assert_that(item['name'].lower(), hamcrest.contains_string('apple'))
-
-
-    def test_discription(self):
-        response = requests.get(self.url, params={'q': 'a'})
-        hamcrest.assert_that(response.status_code, hamcrest.equal_to(200))
-        items = response.json()['data']
-        for item in items:
-            hamcrest.assert_that((item['description'].lower(), hamcrest.contains_string('a')) or (item['name'].lower(), hamcrest.contains_string('a')))
-
-
-    def test_many_word(self):
-        response = requests.get(self.url, params={'q': 'aapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsigned'})
-        hamcrest.assert_that(response.status_code, hamcrest.equal_to(200))
-        items = response.json()['data']
-        hamcrest.assert_that(items, hamcrest.equal_to([]))
-        hamcrest.assert_that(len(items), hamcrest.equal_to(0))
-
-
-    def test_big_lette(self):
-        response = requests.get(self.url, params={'q': 'OWASP'})
-        hamcrest.assert_that(response.status_code, hamcrest.equal_to(200))
-        items = response.json()['data']
-        for item in items:
-            hamcrest.assert_that(item['name'], hamcrest.contains_string('OWASP'))
-
-
-    def test_numbers(self, get_all):
-        response = requests.get(self.url, params={'q': '12345'})
-        hamcrest.assert_that(response.status_code, hamcrest.equal_to(200))
-        items = response.json()['data']
-        hamcrest.assert_that(items, hamcrest.equal_to([]))
-        hamcrest.assert_that(len(items), hamcrest.equal_to(0))
-
-
-    def test_empty(self, get_all):
-        response = requests.get(self.url, params={'q': ''})
-        hamcrest.assert_that(response.status_code, hamcrest.equal_to(200))
-        items_empty_test = response.json()['data']
-        hamcrest.assert_that(items_empty_test, get_all)
-
-
-    def test_gap(self, get_all):
-        response = requests.get(self.url, params={'q': ' '})
-        hamcrest.assert_that(response.status_code, hamcrest.equal_to(200))
-        items = response.json()['data']
-        hamcrest.assert_that(items, get_all)
-
-
-    def test_word_with_gap(self):
-        response = requests.get(self.url, params={'q': 'OWA SP"'})
-        hamcrest.assert_that(response.status_code, hamcrest.equal_to(200))
-        items = response.json()['data']
-        hamcrest.assert_that(len(items), hamcrest.equal_to(0))
-
-
-    def test_null(self, get_all):
-        response = requests.get(self.url, params={'q': None})
-        hamcrest.assert_that(response.status_code, hamcrest.equal_to(200))
-        items = response.json()['data']
-        hamcrest.assert_that(items, get_all)
-
-
-    def test_symbol(self):
-        response = requests.get(self.url, params={'q': '«»‘~!@#$%^&*()?>,./\<][ /*<!—«»♣☺♂'})
-        hamcrest.assert_that(response.status_code, hamcrest.equal_to(200))
-        items = response.json()['data']
-        hamcrest.assert_that(len(items), hamcrest.equal_to(0))
-
-
-    def test_sql(self):
-        response = requests.get(self.url, params={'q': 'select*'})
-        hamcrest.assert_that(response.status_code, hamcrest.equal_to(200))
-        items = response.json()['data']
-        hamcrest.assert_that(len(items), hamcrest.equal_to(0))
-
-
-    def test_xss(self):
-        response = requests.get(self.url, params={'q': '<script>alert("XSS1")</script>'})
-        hamcrest.assert_that(response.status_code, hamcrest.equal_to(200))
-        items = response.json()['data']
-        hamcrest.assert_that(len(items), hamcrest.equal_to(0))
-
-
-    def test_injections(self):
-        response = requests.get(self.url, params={'q': 'DROP TABLE user;'})
-        hamcrest.assert_that(response.status_code, hamcrest.equal_to(200))
-        items = response.json()['data']
-        hamcrest.assert_that(len(items), hamcrest.equal_to(0))
-
-
-    def test_html_injections(self):
-        response = requests.get(self.url, params={'q': '< form % 20 action =»http: // live.hh.ru» > < input % 20 type =»submit» > < / form >'})
-        hamcrest.assert_that(response.status_code, hamcrest.equal_to(200))
-        items = response.json()['data']
-        hamcrest.assert_that(len(items), hamcrest.equal_to(0))
-
-
-    def test_inverted_commas(self):
-        """it's bug"""
-        response = requests.get(self.url, params={'q': ' \'OWASP\' '})
-        hamcrest.assert_that(response.status_code, hamcrest.equal_to(200))
-        items = response.json()['data']
-        hamcrest.assert_that(len(items), hamcrest.equal_to(0))
-        # assert_that(response.status_code, equal_to(500))
 
 
     @pytest.yield_fixture(scope='session')
@@ -152,28 +28,157 @@ class TestServerFunctionality:
         driver.quit()
 
 
+    def test_getall(self):
+        response = requests.get(self.url)
+        assert_that(response.status_code, equal_to(200))
+
+
+    def test_response(self):
+        response = requests.get(self.url, params={'q': 'apple'})
+        assert_that(response.status_code, equal_to(200))
+        items = response.json()['data']
+        assert_that(len(items), greater_than(0))
+        for item in items:
+            assert_that(item['name'].lower(), contains_string('apple'))
+
+
+    def test_discription(self):
+        response = requests.get(self.url, params={'q': 'a'})
+        assert_that(response.status_code, equal_to(200))
+        items = response.json()['data']
+        for item in items:
+            assert_that(
+                (item['description'].lower(), contains_string('a')) or (item['name'].lower(), contains_string('a')))
+
+
+    def test_many_word(self):
+        response = requests.get(self.url, params={
+            'q': 'aapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsigned'})
+        assert_that(response.status_code, equal_to(200))
+        items = response.json()['data']
+        assert_that(items, equal_to([]))
+        assert_that(len(items), equal_to(0))
+
+
+    def test_big_lette(self):
+        response = requests.get(self.url, params={'q': 'OWASP'})
+        assert_that(response.status_code, equal_to(200))
+        items = response.json()['data']
+        for item in items:
+            assert_that(item['name'], contains_string('OWASP'))
+
+
+    def test_numbers(self, get_all):
+        response = requests.get(self.url, params={'q': '12345'})
+        assert_that(response.status_code, equal_to(200))
+        items = response.json()['data']
+        assert_that(items, equal_to([]))
+        assert_that(len(items), equal_to(0))
+
+
+    def test_empty(self, get_all):
+        response = requests.get(self.url, params={'q': ''})
+        assert_that(response.status_code, equal_to(200))
+        items_empty_test = response.json()['data']
+        assert_that(items_empty_test, get_all)
+
+
+    def test_gap(self, get_all):
+        response = requests.get(self.url, params={'q': ' '})
+        assert_that(response.status_code, equal_to(200))
+        items = response.json()['data']
+        assert_that(items, get_all)
+
+
+    def test_word_with_gap(self):
+        response = requests.get(self.url, params={'q': 'OWA SP"'})
+        assert_that(response.status_code, equal_to(200))
+        items = response.json()['data']
+        assert_that(len(items), equal_to(0))
+
+
+    def test_null(self, get_all):
+        response = requests.get(self.url, params={'q': None})
+        assert_that(response.status_code, equal_to(200))
+        items = response.json()['data']
+        assert_that(items, get_all)
+
+
+    def test_symbol(self):
+        response = requests.get(self.url, params={'q': '«»‘~!@#$%^&*()?>,./\<][ /*<!—«»♣☺♂'})
+        assert_that(response.status_code, equal_to(200))
+        items = response.json()['data']
+        assert_that(len(items), equal_to(0))
+
+
+    def test_sql(self):
+        response = requests.get(self.url, params={'q': 'select*'})
+        assert_that(response.status_code, equal_to(200))
+        items = response.json()['data']
+        assert_that(len(items), equal_to(0))
+
+
+    def test_xss(self):
+        response = requests.get(self.url, params={'q': '<script>alert("XSS1")</script>'})
+        assert_that(response.status_code, equal_to(200))
+        items = response.json()['data']
+        assert_that(len(items), equal_to(0))
+
+
+    def test_injections(self):
+        response = requests.get(self.url, params={'q': 'DROP TABLE user;'})
+        assert_that(response.status_code, equal_to(200))
+        items = response.json()['data']
+        assert_that(len(items), equal_to(0))
+
+
+    def test_html_injections(self):
+        response = requests.get(self.url, params={
+            'q': '< form % 20 action =»http: // live.hh.ru» > < input % 20 type =»submit» > < / form >'})
+        assert_that(response.status_code, equal_to(200))
+        items = response.json()['data']
+        assert_that(len(items), equal_to(0))
+
+
+    def test_inverted_commas(self):
+        """it's bug"""
+        response = requests.get(self.url, params={'q': ' \'OWASP\' '})
+        assert_that(response.status_code, equal_to(200))
+        items = response.json()['data']
+        assert_that(len(items), equal_to(0))
+        # assert_that(response.status_code, equal_to(500))
+
+
     def test_check_goods_count(self, driver):
         driver.get('https://restream.sloppy.zone/#/search')
         driver.find_element(By.CSS_SELECTOR, " div > ul > li> form > div > input").send_keys('OWASP')
         driver.find_element(By.ID, "searchButton").click()
 
-        # newitems = driver.find_element(By.CSS_SELECTOR, "body > div.container-fluid.ng-scope > div > div > table > tbody > tr > td:nth-child(2)").size
-        # print(newitems)
+        items = driver.find_elements(By.CSS_SELECTOR, '[data-ng-repeat="product in products"]')
+
+        web_products = list()
+        for item in items:
+            row = item.find_elements(By.CSS_SELECTOR, '.ng-binding')
+            name = row[0].get_attribute("innerHTML")
+            description = row[1].get_attribute("innerHTML")
+            price = row[2].get_attribute("innerHTML")
+            product = {
+                "name": name,
+                "description": description,
+                "price": float(price)
+            }
+
+            web_products.append(product)
 
         response = requests.get(self.url, params={'q': 'OWASP'})
-        hamcrest.assert_that(response.status_code, hamcrest.equal_to(200))
-        # all_date = response.json()['data']
-        # print(all)
-        name = response.json()['data']['name']
-        description = response.json()['data']['description']
-        price = response.json()['data']['price']
+        api_items = response.json()['data']
 
-        rows = driver.find_elements(By.TAG_NAME, "tr")
-        count = 0
-        for row in rows:
-            # Get the columns
-            col_name = row.find_elements(By.TAG_NAME, "td")[2]  # This is the product Name column
-            col_description = row.find_elements(By.TAG_NAME, "td")[3]  # This is the Description column
-            col_price = row.find_elements(By.TAG_NAME, "td)")[4]  # This is the Price column
+        filtered_items = list()
+        for item in api_items:
+            filtered_item = {key: item[key] for key in ['name', 'description', 'price']}
+            filtered_items.append(filtered_item)
 
-            hamcrest.assert_that(col_name.text, hamcrest.equal_to(name)) and (col_description.text, hamcrest.equal_to(description)) and (col_price.text, hamcrest.equal_to(price))
+        for web, api in zip(web_products, filtered_items):
+            assert_that(web, has_entries(api))
+
+        assert_that(len(web_products), equal_to(len(filtered_items)))
