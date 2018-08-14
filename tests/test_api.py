@@ -1,8 +1,6 @@
 from hamcrest import *
 import pytest
-import selenium
 import requests
-from selenium.webdriver.common.by import By
 
 
 class TestServerFunctionality:
@@ -17,15 +15,6 @@ class TestServerFunctionality:
         response_all = requests.get(self.url)
         all_item = response_all.json()['data']
         return all_item
-
-
-    @pytest.yield_fixture(scope='session')
-    def driver(self):
-        driver = selenium.webdriver.Chrome("D:\\downloads\\avtotests\\chromedriver.exe")
-        driver.implicitly_wait(10)
-        driver.maximize_window()
-        yield driver
-        driver.quit()
 
 
     def test_getall(self):
@@ -56,7 +45,6 @@ class TestServerFunctionality:
             'q': 'aapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsignedapplettestsigned'})
         assert_that(response.status_code, equal_to(200))
         items = response.json()['data']
-        assert_that(items, equal_to([]))
         assert_that(len(items), equal_to(0))
 
 
@@ -72,7 +60,6 @@ class TestServerFunctionality:
         response = requests.get(self.url, params={'q': '12345'})
         assert_that(response.status_code, equal_to(200))
         items = response.json()['data']
-        assert_that(items, equal_to([]))
         assert_that(len(items), equal_to(0))
 
 
@@ -147,38 +134,3 @@ class TestServerFunctionality:
         items = response.json()['data']
         assert_that(len(items), equal_to(0))
         # assert_that(response.status_code, equal_to(500))
-
-
-    def test_check_goods_count(self, driver):
-        driver.get('https://restream.sloppy.zone/#/search')
-        driver.find_element(By.CSS_SELECTOR, " div > ul > li> form > div > input").send_keys('OWASP')
-        driver.find_element(By.ID, "searchButton").click()
-
-        items = driver.find_elements(By.CSS_SELECTOR, '[data-ng-repeat="product in products"]')
-
-        web_products = list()
-        for item in items:
-            row = item.find_elements(By.CSS_SELECTOR, '.ng-binding')
-            name = row[0].get_attribute("innerHTML")
-            description = row[1].get_attribute("innerHTML")
-            price = row[2].get_attribute("innerHTML")
-            product = {
-                "name": name,
-                "description": description,
-                "price": float(price)
-            }
-
-            web_products.append(product)
-
-        response = requests.get(self.url, params={'q': 'OWASP'})
-        api_items = response.json()['data']
-
-        filtered_items = list()
-        for item in api_items:
-            filtered_item = {key: item[key] for key in ['name', 'description', 'price']}
-            filtered_items.append(filtered_item)
-
-        for web, api in zip(web_products, filtered_items):
-            assert_that(web, has_entries(api))
-
-        assert_that(len(web_products), equal_to(len(filtered_items)))
