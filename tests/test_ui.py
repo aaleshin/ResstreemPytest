@@ -70,7 +70,7 @@ class TestClientFunctionality:
         web_products = list()
         for item in items:
             row = item.find_elements(By.CSS_SELECTOR, '.ng-binding')
-            price = row[2]
+            price = row[2].get_attribute("innerHTML")
             product = {
                 "price": float(price)
             }
